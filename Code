@@ -1,0 +1,90 @@
+extends Node2D
+
+func _read():
+	pass
+
+
+
+# member variables here, example:
+
+
+var screen_px
+var pad_px
+
+
+	
+
+func _ready():
+	# Initialization
+	screen_px = get_viewport_rect().size
+	
+	pad_px = get_node("leftpaddle").get_texture().get_size()
+	
+	set_process(true)
+	
+var speed_of_ball = 100
+const paddle_movement = 150
+
+#physics for ball movement 
+var ball_movement = Vector2 (-1,0)
+	
+func _process(delta):
+
+	var curBall_pos = get_node("pongBall").get_pos()
+	
+	var leftPaddle_pos = Rect2(get_node("leftpaddle").get_pos() - pad_px/ 2, pad_px)
+
+	var rightPaddle_pos = Rect2(get_node("rightpaddle").get_pos() - pad_px/ 2, pad_px)
+
+	curBall_pos += ball_movement * speed_of_ball * delta
+	
+
+	if (( curBall_pos.y < 0 and ball_movement.y < 0) or (curBall_pos.y > screen_px.y and ball_movement.y > 0)):
+
+		ball_movement.y = -ball_movement.y
+		
+		
+	#when ball touches paddle, increase ball spead everytime
+	if ((leftPaddle_pos.has_point(curBall_pos) and ball_movement.x < 0) or (rightPaddle_pos.has_point(curBall_pos) and ball_movement.x > 0)):
+        ball_movement.x =- ball_movement.x
+        speed_of_ball *= 1.1
+        ball_movement.y = randf() * 3.0 - 1
+        ball_movement = ball_movement.normalized()	
+
+		#ball goes off screen
+		
+	if ((curBall_pos.x < 0) or (curBall_pos.x > screen_px.x)):
+       	curBall_pos = screen_px * 0.5 #ball goes to center of screen
+        speed_of_ball = 100
+        ball_movement = Vector2 (-1,0)
+
+	get_node("pongBall").set_pos(curBall_pos)
+	
+	
+	var leftPaddle_mov = get_node("leftpaddle").get_pos()
+	
+#####Move paddle down if preses up key on keyboard
+	if (leftPaddle_mov.y > 0 and Input.is_action_pressed( "LeftPaddleShift" )):
+        leftPaddle_mov.y += -paddle_movement * delta
+
+
+#####Move paddle down if preses down key on keyboard
+	if (leftPaddle_mov.y < screen_px.y and Input.is_action_pressed("LeftPaddleCtrl")):
+        leftPaddle_mov.y += paddle_movement * delta
+
+####Set the paddle
+	get_node("leftpaddle").set_pos(leftPaddle_mov)
+
+    #move right pad 
+	var rightPaddle_mov = get_node("rightpaddle").get_pos()
+
+
+	if (rightPaddle_mov.y > 0 and Input.is_action_pressed("Up")):
+        rightPaddle_mov.y += -paddle_movement * delta
+
+	if (rightPaddle_mov.y < screen_px.y and Input.is_action_pressed("Down")):
+        rightPaddle_mov.y += paddle_movement * delta
+
+	get_node("rightpaddle").set_pos(rightPaddle_mov)
+	
+	
